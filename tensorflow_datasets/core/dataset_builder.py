@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import abc
 import functools
+import inspect
 import itertools
 import os
 import sys
@@ -857,9 +858,20 @@ class FileAdapterBuilder(DatasetBuilder):
     if not tf.io.gfile.exists(self._data_dir):
       tf.io.gfile.makedirs(self._data_dir)
 
+    # Pass `pipeline` into `_split_generators()` from `prepare_split_kwargs` if
+    # it's in the call signature of `_split_generators()`.
+    # This allows for global preprocessing in beam.
+    split_generators_kwargs = {}
+    split_generators_arg_names = (
+        inspect.getargspec(self._split_generators).args if six.PY2 else
+        inspect.signature(self._split_generators).parameters.keys())
+    if "pipeline" in split_generators_arg_names:
+      split_generators_kwargs["pipeline"] = prepare_split_kwargs["pipeline"]
+
     # Generating data for all splits
     split_dict = splits_lib.SplitDict()
-    for split_generator in self._split_generators(dl_manager):
+    for split_generator in self._split_generators(
+        dl_manager, **split_generators_kwargs):
       if splits_lib.Split.ALL == split_generator.split_info.name:
         raise ValueError(
             "tfds.Split.ALL is a special split keyword corresponding to the "
