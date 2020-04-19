@@ -259,7 +259,6 @@ def _build_splits(devkit):
   mapping_line_ids = None
   mapping_lines = None
   for fpath, fobj in devkit:
-    # input(fpath)
     fpath = fpath.replace("\\", "/")
     if fpath == "mapping/train_rand.txt":
       # Converts 1-based line index to 0-based line index.
@@ -268,7 +267,6 @@ def _build_splits(devkit):
       ]
     if fpath == "mapping/train_mapping.txt":
       mapping_lines = fobj.read().splitlines()
-      # input(mapping_lines)
       mapping_lines = [x.decode("utf-8") for x in mapping_lines]
 
   assert mapping_line_ids
@@ -276,7 +274,6 @@ def _build_splits(devkit):
 
   video_to_image = collections.defaultdict(list)
   for image_id, mapping_lineid in enumerate(mapping_line_ids):
-    # input(mapping_lineid)
     line = mapping_lines[mapping_lineid]
     video_id = line.split(" ")[1]
     video_to_image[video_id].append(image_id)
